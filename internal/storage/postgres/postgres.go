@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/alexiva05/url-shortener/internal/storage"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -50,4 +51,34 @@ RETURNING id;
 	}
 
 	return id, nil
+}
+
+func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
+	q := `
+SELECT url FROM urls 
+WHERE alias = $1
+`
+	var url string
+	err := s.db.QueryRow(ctx, q, alias).Scan(&url)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", fmt.Errorf("Storage - GetURL: %w", storage.ErrURLNotFound)
+		}
+		return "", fmt.Errorf("Storage - GetURL: %w", err)
+	}
+
+	return url, nil
+}
+
+func (s *Storage) DeleteURL(ctx context.Context, alias string) error {
+	q := `
+DELETE FROM urls
+WHERE alias = $1
+`
+	_, err := s.db.Exec(ctx, q, alias)
+	if err != nil {
+		return fmt.Errorf("Storage - DeleteURL: %w", err)
+	}
+
+	return nil
 }
