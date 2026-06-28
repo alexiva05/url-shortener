@@ -1,0 +1,19 @@
+# Binaries
+bin/
+*.exe
+
+# Config with secrets
+config/local.yaml
+config/prod.yaml
+*.env
+.env*
+
+# Docker data
+data/
+
+# IDE
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
