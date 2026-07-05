@@ -8,6 +8,8 @@ import (
 
 	"github.com/alexiva05/url-shortener/internal/config"
 	"github.com/alexiva05/url-shortener/internal/storage/postgres"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -41,19 +43,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	id, err := storage.SaveURL(ctx, "https://google.com", "google")
-	if err != nil {
-		log.Error("failed to save URL", slog.String("error", err.Error()))
-		os.Exit(1)
-	}
+	router := chi.NewRouter()
 
-	log.Info("saved url", slog.Int64("id", id))
-
-	id, err = storage.SaveURL(ctx, "https://google.com", "google")
-	if err != nil {
-		log.Error("failed to save URL", slog.String("error", err.Error()))
-		os.Exit(1)
-	}
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
 
 	_ = storage
 
